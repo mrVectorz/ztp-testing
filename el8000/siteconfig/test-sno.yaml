@@ -1,0 +1,73 @@
+# test-sno-bmh-secret & assisted-deployment-pull-secret need to be created under same namespace test-sno
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: test-sno
+  labels:
+    name: test-sno
+---
+apiVersion: ran.openshift.io/v1
+kind: SiteConfig
+metadata:
+  name: "test-sno"
+  namespace: "test-sno"
+spec:
+  #baseDomain: "clus2.t5g.lab.eng.bos.redhat.com"
+  baseDomain: "hpecloud.org"
+  pullSecretRef:
+    name: "pull-secret"
+  clusterImageSetNameRef: "openshift-4.8"
+  sshPublicKey: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDpUE2TTSndAH40z9ccaOv4jqBwSFP6M1HGDTp5MlSjuhARj4b5MNnOawqxBLO4DUdYmZtDPkwFSq0JTV59RudOWF+RmShc5WotVBYqLnmGzq5WEVhbo5ZwHey8OQ9env0lJBHzAArzq878B6Y0aEwUV+vBqv7wHZK+J7aF04d/qQm7yPlcuCc0JCE2I2Dqgy6O9dJI/bNLvqWKCt+d9og2nmzJbCPI3w4rscZZizL7d1kk93DiDFFnjfNaChgFcpDASnZOZlceEY7xt2Kc4SwHDfg7ykACDoonleUuF0eDbpCUPo3QIvKGLEzzo4ONQMEfb7qFjQxk+YxlpnXDE5Gl30IK0u/HtmJyA1hZyhJqb8l+Bh0qnm8+fxxctsGcROyXoIYfHeMucOjr0nZitplL6bI+NTI6TqILphfEbNCUJe/Uo9CrojU9dN1pfCZ71+FRaHGDrxoZLyhduxgBrHIlQEPOiYbiGif2unMNERaPdjgB3R5bqiCrhT/a4jl49IU="
+  clusters:
+  - clusterName: "test-sno"
+    clusterType: "sno"
+    clusterProfile: "du"
+    clusterLabels:
+      group-du-sno: ""
+      common: true
+      sites : "test-sno"
+    clusterNetwork:
+      - cidr: 10.19.20.100/25
+        hostPrefix: 23
+    serviceNetwork:
+      - "172.30.0.0/16"
+    nodes:
+      - hostName: "test-sno.hpecloud.org"
+        #bmcAddress: "idrac-virtualmedia+https://[2620:52::10e7:f602:70ff:fee4:f4e2]/redfish/v1/Systems/System.Embedded.1"
+        bmcAddress: "10.19.109.242"
+        bmcCredentialsName:
+          name: "test-sno-bmh-secret"
+        bootMACAddress: "0C:42:A1:8A:74:EC"
+        bootMode: "UEFI"
+        rootDeviceHints:
+          hctl: '0:1:0'
+        cpuset: "0-1,52-53"
+        nodeNetwork:
+          interfaces:
+            - name: eno1
+              macAddress: "0C:42:A1:8A:74:EC"
+          config:
+            interfaces:
+              - name: eno1
+                type: ethernet
+                state: up
+                macAddress: "0C:42:A1:8A:74:EC"
+                ipv4:
+                  enabled: false
+                ipv6:
+                  enabled: true
+                  address:
+                  - ip: 2620:52::10e7:e42:a1ff:fe8a:900
+                    prefix-length: 64
+            dns-resolver:
+              config:
+                search:
+                - clus2.t5g.lab.eng.bos.redhat.com
+                server:
+                - 2620:52:0:1310::1f6
+            routes:
+              config:
+              - destination: ::/0
+                next-hop-interface: eno1
+                next-hop-address: 2620:52:0:10e7::fc
+                table-id: 254
